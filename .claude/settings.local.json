@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(php -r \"echo PHP_BINARY . PHP_EOL . PHP_VERSION . PHP_EOL;\")",
+      "Bash(php -m)",
+      "Bash(php -r \"echo class_exists\\('ZipArchive'\\) ? 'ZipArchive OK' : 'ZipArchive still missing';\")",
+      "Bash(xargs cat *)"
+    ]
+  }
+}
