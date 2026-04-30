@@ -1,0 +1,19 @@
+{
+  "version": "0.23.0",
+  "build": {
+    "php": "8.2",
+    "extensions": [
+      "zip", "ctype", "curl", "dom", "fileinfo", "filter", 
+      "hash", "mbstring", "openssl", "pcre", "pdo", "session", 
+      "tokenizer", "xml", "pdo_mysql", "redis"
+    ],
+    "composer": {
+      "flags": ["--optimize-autoloader", "--no-scripts", "--no-interaction", "-v"]
+    }
+  },
+  "deploy": {
+    "start": {
+      "command": "php artisan serve --host=0.0.0.0 --port=$PORT"
+    }
+  }
+}
