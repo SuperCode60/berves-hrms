@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction"
+    "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction --no-scripts"
   },
   "deploy": {
     "startCommand": "php artisan serve --host=0.0.0.0 --port=${PORT}",
