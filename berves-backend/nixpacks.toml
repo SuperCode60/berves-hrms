@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["php82", "composer"]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
+
+# Skip Node.js entirely
+[phases.build]
+cmds = ["echo 'Skipping Node.js build - frontend is on Vercel'"]
+
+[start]
+cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
