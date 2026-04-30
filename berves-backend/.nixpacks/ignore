@@ -1,12 +1,8 @@
-# Create directory
-New-Item -ItemType Directory -Force -Path ".nixpacks"
-
-# Create ignore file
-@'
-package.json
+﻿package.json
 package-lock.json
 node_modules
 vite.config.js
 tailwind.config.js
 postcss.config.js
-'@ | Out-File -FilePath ".nixpacks/ignore" -Encoding utf8 -Force
+resources/js
+resources/css
