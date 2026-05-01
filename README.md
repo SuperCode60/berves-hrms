@@ -29,12 +29,12 @@ php artisan serve
 ```
 
 Default seed credentials:
-| Role            | Email                    | Password |
-|-----------------|--------------------------|----------|
-| Admin           | admin@berves.com         | password |
-| HR              | hr@berves.com            | password |
-| Payroll Officer | payroll@berves.com       | password |
-| Employee        | employee@berves.com      | password |
+| Role            | Email                    | Password           |
+|-----------------|--------------------------|--------------------|
+| Admin           | admin@berves.com         | Admin@Secure2024!  |
+| HR              | hr@berves.com            | Hr@Secure2024!     |
+| Payroll Officer | payroll@berves.com       | Payroll@Secure2024!|
+| Employee        | employee@berves.com      | Employee@Secure2024!|
 
 ### Frontend
 

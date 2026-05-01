@@ -12,44 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Daily database backup at 2 AM
-        $schedule->command('backup:database')
-            ->dailyAt('02:00')
-            ->timezone('Africa/Accra')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        // Weekly files backup on Sundays at 3 AM
-        $schedule->command('backup:files')
-            ->weekly()
-            ->sundays()
-            ->at('03:00')
-            ->timezone('Africa/Accra')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        // Full backup weekly on Sundays at 4 AM
-        $schedule->command('backup:run')
-            ->weekly()
-            ->sundays()
-            ->at('04:00')
-            ->timezone('Africa/Accra')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        // Cleanup old backups daily at 5 AM
-        $schedule->command('backup:clean')
-            ->dailyAt('05:00')
-            ->timezone('Africa/Accra')
-            ->withoutOverlapping()
-            ->runInBackground();
-
-        // Monitor backup health daily at 6 AM
-        $schedule->command('backup:monitor')
-            ->dailyAt('06:00')
-            ->timezone('Africa/Accra')
-            ->withoutOverlapping()
-            ->runInBackground();
+        // Backup commands removed - spatie/laravel-backup package was removed
     }
 
     /**

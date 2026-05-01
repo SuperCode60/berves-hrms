@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'role'     => \App\Http\Middleware\CheckRole::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'force.https' => \App\Http\Middleware\ForceHttps::class,
         ]);
 
         // Exclude all API routes from CSRF verification

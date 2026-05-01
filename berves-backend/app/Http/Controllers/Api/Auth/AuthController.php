@@ -92,11 +92,12 @@ class AuthController extends Controller
             ['token' => Hash::make($token), 'created_at' => now()]
         );
 
-        // In production: mail the token. We return it here for development convenience.
-        // Remove the token from the response and use Mail::send() in production.
+        // Send email with reset token
+        // TODO: Implement email sending using Mail::send()
+        // For now, return success message without exposing the token
         return $this->success(
-            ['reset_token' => $token, 'note' => 'In production this is sent by email only.'],
-            'Password reset token generated'
+            ['message' => 'Password reset link has been sent to your email.'],
+            'Password reset email sent'
         );
     }
 

@@ -13,7 +13,7 @@ export const roleAssignmentsApi = {
 
   // Get user's permissions summary
   getUserPermissions: (userId) => {
-    return axios.get(`/api/v1/settings/role-assignments/users/${userId}/permissions`);
+    return axios.get(`/api/v1/settreings/role-assignments/users/${userId}/permissions`);
   },
 
   // Assign multiple roles to user

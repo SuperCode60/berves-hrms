@@ -34,7 +34,7 @@ class UsersSeeder extends Seeder
 
         User::updateOrCreate(
             ['email' => 'admin@berves.com'],
-            ['employee_id' => $adminEmployee->id, 'password' => Hash::make('password'), 'role' => 'admin', 'is_active' => true]
+            ['employee_id' => $adminEmployee->id, 'password' => Hash::make('Admin@Secure2024!'), 'role' => 'admin', 'is_active' => true]
         );
 
         // HR User
@@ -57,7 +57,7 @@ class UsersSeeder extends Seeder
         );
         User::updateOrCreate(
             ['email' => 'hr@berves.com'],
-            ['employee_id' => $hrEmployee->id, 'password' => Hash::make('password'), 'role' => 'hr', 'is_active' => true]
+            ['employee_id' => $hrEmployee->id, 'password' => Hash::make('Hr@Secure2024!'), 'role' => 'hr', 'is_active' => true]
         );
 
         // Payroll Officer
@@ -80,7 +80,7 @@ class UsersSeeder extends Seeder
         );
         User::updateOrCreate(
             ['email' => 'payroll@berves.com'],
-            ['employee_id' => $payrollEmp->id, 'password' => Hash::make('password'), 'role' => 'payroll_officer', 'is_active' => true]
+            ['employee_id' => $payrollEmp->id, 'password' => Hash::make('Payroll@Secure2024!'), 'role' => 'payroll_officer', 'is_active' => true]
         );
 
         // Sample Employee
@@ -103,17 +103,17 @@ class UsersSeeder extends Seeder
         );
         User::updateOrCreate(
             ['email' => 'employee@berves.com'],
-            ['employee_id' => $emp->id, 'password' => Hash::make('password'), 'role' => 'employee', 'is_active' => true]
+            ['employee_id' => $emp->id, 'password' => Hash::make('Employee@Secure2024!'), 'role' => 'employee', 'is_active' => true]
         );
 
         $this->command->info('Users seeded. Login credentials:');
         $this->command->table(
             ['Role', 'Email', 'Password'],
             [
-                ['Admin', 'admin@berves.com', 'password'],
-                ['HR', 'hr@berves.com', 'password'],
-                ['Payroll Officer', 'payroll@berves.com', 'password'],
-                ['Employee', 'employee@berves.com', 'password'],
+                ['Admin', 'admin@berves.com', 'Admin@Secure2024!'],
+                ['HR', 'hr@berves.com', 'Hr@Secure2024!'],
+                ['Payroll Officer', 'payroll@berves.com', 'Payroll@Secure2024!'],
+                ['Employee', 'employee@berves.com', 'Employee@Secure2024!'],
             ]
         );
     }
