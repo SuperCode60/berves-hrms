@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction"
+    "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction --no-scripts && mkdir -p /app/bootstrap/cache /app/storage/framework/sessions /app/storage/framework/views /app/storage/framework/cache /app/storage/logs && chmod -R 775 /app/bootstrap/cache /app/storage"
   },
   "deploy": {
     "preDeployCommand": "php artisan migrate --force",
