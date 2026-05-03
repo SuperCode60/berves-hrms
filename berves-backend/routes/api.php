@@ -59,6 +59,41 @@ Route::any('/login', function () {
 */
 Route::prefix('v1')->group(function () {
 
+    // ── API Root Info (FIXED: Added this to prevent 404 on /v1) ──
+    Route::get('/', function () {
+        return response()->json([
+            'success' => true,
+            'app' => 'Berves HRMS API',
+            'version' => '1.0.0',
+            'status' => 'running',
+            'endpoints' => [
+                'public' => [
+                    'POST /auth/login' => 'Login with email and password',
+                    'POST /auth/forgot-password' => 'Request password reset',
+                    'POST /auth/reset-password' => 'Reset password with token',
+                ],
+                'authenticated' => [
+                    'GET /auth/me' => 'Get current user profile',
+                    'POST /auth/logout' => 'Logout and invalidate token',
+                    'GET /dashboard/stats' => 'Get dashboard statistics',
+                    'GET /employees' => 'List employees',
+                    'GET /leave/types' => 'Get leave types',
+                    'POST /attendance/check-in' => 'Record check-in time',
+                    'POST /attendance/check-out' => 'Record check-out time',
+                    'GET /payroll/runs/my-payslips' => 'Get my payslips',
+                ],
+                'admin_only' => [
+                    'GET /settings' => 'System settings',
+                    'GET /roles' => 'Manage roles',
+                    'GET /permissions' => 'Manage permissions',
+                    'POST /backups' => 'Create database backup',
+                ],
+            ],
+            'documentation' => 'https://berves-hrms-production.up.railway.app/api/docs',
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    });
+
     // ── Public Routes ──────────────────────────────────────────────────────
     Route::post('/auth/login',           [AuthController::class, 'login']);
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -76,7 +111,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/permissions',      [AuthController::class, 'permissions']);
         });
 
-        // ========== NOTIFICATIONS (every user — own records only unless admin/hr) ==========
+        // ========== NOTIFICATIONS ==========
         Route::prefix('notifications')->group(function () {
             Route::get('/',              [NotificationController::class, 'index']);
             Route::get('/unread-count',  [NotificationController::class, 'unreadCount']);
@@ -96,7 +131,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/recent-employees', [DashboardController::class, 'recentEmployees']);
         });
 
-        // ========== EMPLOYEES — admin, hr, manager ==========
+        // ========== EMPLOYEES ==========
         Route::middleware(['role:admin,hr,manager'])->group(function () {
             Route::apiResource('employees', EmployeeController::class)->only(['index','show']);
             Route::prefix('employees/{employee}')->group(function () {
@@ -110,9 +145,9 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('employees', EmployeeController::class)->except(['index','show']);
             Route::prefix('employees/{employee}')->group(function () {
                 Route::post('/photo',           [EmployeeController::class, 'uploadPhoto']);
-                Route::delete('/photo',        [App\Http\Controllers\Api\Employee\ProfilePhotoController::class, 'destroy']);
-                Route::get('/photo',          [App\Http\Controllers\Api\Employee\ProfilePhotoController::class, 'show']);
-                Route::post('/assign-manager', [EmployeeController::class, 'assignManager']);
+                Route::delete('/photo',         [App\Http\Controllers\Api\Employee\ProfilePhotoController::class, 'destroy']);
+                Route::get('/photo',            [App\Http\Controllers\Api\Employee\ProfilePhotoController::class, 'show']);
+                Route::post('/assign-manager',  [EmployeeController::class, 'assignManager']);
                 Route::apiResource('documents', DocumentController::class)->except(['create','edit','index','show']);
                 Route::post('documents/{document}/restore',   [DocumentController::class, 'restore']);
                 Route::delete('documents/{document}/force',   [DocumentController::class, 'forceDelete']);
@@ -131,7 +166,7 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // ========== LOOKUP / MASTER DATA — admin, hr ==========
+        // ========== LOOKUP / MASTER DATA ==========
         Route::middleware(['role:admin,hr'])->group(function () {
             Route::apiResource('departments', DepartmentController::class);
             Route::prefix('departments')->group(function () {
@@ -152,9 +187,8 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // ========== PAYROLL — admin, hr, payroll_officer ==========
+        // ========== PAYROLL ==========
         Route::middleware(['role:admin,hr,payroll_officer'])->prefix('payroll')->group(function () {
-            // Periods
             Route::apiResource('periods', PayrollPeriodController::class);
             Route::prefix('periods/{period}')->group(function () {
                 Route::post('/run',     [PayrollPeriodController::class, 'run']);
@@ -164,14 +198,12 @@ Route::prefix('v1')->group(function () {
                 Route::get('/runs',     [PayrollRunController::class, 'index']);
                 Route::get('/summary',  [PayrollPeriodController::class, 'summary']);
             });
-            // Runs
             Route::prefix('runs')->group(function () {
                 Route::get('/{run}/payslip',         [PayrollRunController::class, 'payslip']);
                 Route::post('/{run}/payslip/send',   [PayrollRunController::class, 'sendPayslip']);
                 Route::get('/{run}/details',         [PayrollRunController::class, 'details']);
                 Route::post('/{run}/recalculate',    [PayrollRunController::class, 'recalculate']);
             });
-            // Overtime — admin/hr/payroll_officer can CRUD; approve requires admin/hr
             Route::apiResource('overtime', OvertimeController::class);
             Route::prefix('overtime')->group(function () {
                 Route::post('/{overtime}/approve', [OvertimeController::class, 'approve']);
@@ -181,7 +213,6 @@ Route::prefix('v1')->group(function () {
                 Route::get('/approved',            [OvertimeController::class, 'approved']);
                 Route::get('/by-employee/{employee}', [OvertimeController::class, 'byEmployee']);
             });
-            // Loans
             Route::apiResource('loans', LoanController::class);
             Route::prefix('loans')->group(function () {
                 Route::post('/{loan}/approve',            [LoanController::class, 'approve']);
@@ -190,7 +221,6 @@ Route::prefix('v1')->group(function () {
                 Route::get('/{loan}/repayment-schedule',  [LoanController::class, 'repaymentSchedule']);
                 Route::get('/pending',                    [LoanController::class, 'pending']);
             });
-            // Payroll reports
             Route::prefix('reports')->group(function () {
                 Route::get('/salary-summary',    [ReportController::class, 'salarySummary']);
                 Route::get('/deduction-summary', [ReportController::class, 'deductionSummary']);
@@ -198,10 +228,9 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // Employee self-service payslips (own record only — enforced in controller)
         Route::get('/payroll/runs/my-payslips', [PayrollRunController::class, 'myPayslips']);
 
-        // ========== ATTENDANCE — all authenticated ==========
+        // ========== ATTENDANCE ==========
         Route::prefix('attendance')->group(function () {
             Route::get('/my',                    [AttendanceController::class, 'myAttendance']);
             Route::get('/',                      [AttendanceController::class, 'index']);
@@ -211,7 +240,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/by-date',               [AttendanceController::class, 'byDate']);
             Route::get('/by-employee/{employee}',[AttendanceController::class, 'byEmployee']);
         });
-        // Attendance admin actions — admin, hr, manager
+        
         Route::middleware(['role:admin,hr,manager'])->prefix('attendance')->group(function () {
             Route::post('/{attendance}/adjust',  [AttendanceController::class, 'adjust']);
             Route::get('/summary',               [AttendanceController::class, 'summary']);
@@ -220,7 +249,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/bulk-check-in',        [AttendanceController::class, 'bulkCheckIn']);
         });
 
-        // ========== SHIFTS — admin, hr, manager ==========
+        // ========== SHIFTS ==========
         Route::middleware(['role:admin,hr,manager'])->prefix('shifts')->group(function () {
             Route::get('/templates',                [ShiftController::class, 'templates']);
             Route::post('/templates',               [ShiftController::class, 'storeTemplate']);
@@ -237,25 +266,21 @@ Route::prefix('v1')->group(function () {
             Route::get('/schedules/current-week',           [ShiftController::class, 'currentWeekSchedule']);
         });
 
-        // ========== LEAVE — all authenticated ==========
+        // ========== LEAVE ==========
         Route::prefix('leave')->group(function () {
-            // Read-only for everyone
             Route::get('types',             [LeaveTypeController::class, 'index']);
             Route::get('types/{type}',      [LeaveTypeController::class, 'show']);
             Route::get('holidays',          [HolidayController::class, 'index']);
             Route::get('holidays/upcoming', [HolidayController::class, 'upcoming']);
             Route::get('holidays/calendar/{year}', [HolidayController::class, 'calendar']);
-            // Self-service requests
             Route::apiResource('requests', LeaveRequestController::class)->except(['create','edit']);
             Route::post('requests/{request}/cancel', [LeaveRequestController::class, 'cancel']);
             Route::get('requests/by-employee/{employee}', [LeaveRequestController::class, 'byEmployee']);
-            // Off-days self-service
             Route::apiResource('off-days', OffDayController::class)->except(['create','edit']);
-            // Entitlements — index accessible to all (controller filters by role); by-employee helper
             Route::get('entitlements',                        [EntitlementController::class, 'index']);
             Route::get('entitlements/by-employee/{employee}', [EntitlementController::class, 'byEmployee']);
         });
-        // Leave admin actions — admin, hr, manager
+        
         Route::middleware(['role:admin,hr,manager'])->prefix('leave')->group(function () {
             Route::apiResource('types', LeaveTypeController::class)->except(['index','show']);
             Route::post('types/{type}/activate',   [LeaveTypeController::class, 'activate']);
@@ -278,7 +303,7 @@ Route::prefix('v1')->group(function () {
             Route::post('holidays/bulk-create', [HolidayController::class, 'bulkCreate']);
         });
 
-        // ========== RECRUITMENT — admin, hr ==========
+        // ========== RECRUITMENT ==========
         Route::middleware(['role:admin,hr'])->prefix('recruitment')->group(function () {
             Route::apiResource('postings', JobPostingController::class);
             Route::prefix('postings/{posting}')->group(function () {
@@ -313,14 +338,14 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // ========== TRAINING — all authenticated ==========
+        // ========== TRAINING ==========
         Route::prefix('training')->group(function () {
             Route::apiResource('programs',    ProgramController::class)->only(['index','show']);
             Route::apiResource('enrollments', EnrollmentController::class)->only(['index','show']);
             Route::get('enrollments/by-employee/{employee}', [EnrollmentController::class, 'byEmployee']);
             Route::get('enrollments/expiring',               [EnrollmentController::class, 'expiring']);
         });
-        // Training management — admin, hr
+        
         Route::middleware(['role:admin,hr'])->prefix('training')->group(function () {
             Route::apiResource('programs', ProgramController::class)->except(['index','show']);
             Route::prefix('programs/{program}')->group(function () {
@@ -338,7 +363,7 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // ========== PERFORMANCE — all authenticated (self) ==========
+        // ========== PERFORMANCE ==========
         Route::prefix('performance')->group(function () {
             Route::apiResource('kpis',  KpiController::class)->only(['index','show']);
             Route::get('kpis/by-department/{department}', [KpiController::class, 'byDepartment']);
@@ -351,7 +376,7 @@ Route::prefix('v1')->group(function () {
             Route::get('appraisals/team',                  [AppraisalController::class, 'teamAppraisals']);
             Route::get('appraisals/{appraisal}/pdf',       [AppraisalController::class, 'generatePDF']);
         });
-        // Performance admin — admin, hr, manager
+        
         Route::middleware(['role:admin,hr,manager'])->prefix('performance')->group(function () {
             Route::apiResource('kpis', KpiController::class)->except(['index','show']);
             Route::post('kpis/{kpi}/activate',   [KpiController::class, 'activate']);
@@ -366,12 +391,12 @@ Route::prefix('v1')->group(function () {
             Route::post('appraisals/{appraisal}/reject',  [AppraisalController::class, 'reject']);
         });
 
-        // ========== SAFETY — all authenticated ==========
+        // ========== SAFETY ==========
         Route::prefix('safety')->group(function () {
             Route::apiResource('incidents',   IncidentController::class)->only(['index','show','store']);
             Route::apiResource('inspections', InspectionController::class)->only(['index','show']);
         });
-        // Safety management — admin, hr, manager
+        
         Route::middleware(['role:admin,hr,manager'])->prefix('safety')->group(function () {
             Route::apiResource('incidents', IncidentController::class)->except(['index','show','store']);
             Route::prefix('incidents/{incident}')->group(function () {
@@ -394,7 +419,7 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // ========== REPORTS — admin, hr, payroll_officer ==========
+        // ========== REPORTS ==========
         Route::middleware(['role:admin,hr,payroll_officer'])->prefix('reports')->group(function () {
             Route::get('/payroll',     [ReportController::class, 'payroll']);
             Route::get('/attendance',  [ReportController::class, 'attendance']);
@@ -435,7 +460,6 @@ Route::prefix('v1')->group(function () {
             Route::post('leave-policies/{policy}/deactivate',    [LeavePolicyController::class, 'deactivate']);
             Route::get('leave-policies/{policy}/apply-to-department', [LeavePolicyController::class, 'applyToDepartment']);
             
-            // Leave Entitlements
             Route::get('leave-policies/{leaveTypeId}/entitlements', [LeavePolicyController::class, 'getEntitlements']);
             Route::put('leave-entitlements/{entitlementId}', [LeavePolicyController::class, 'updateEntitlement']);
             Route::post('leave-policies/{leaveTypeId}/bulk-update-entitlements', [LeavePolicyController::class, 'bulkUpdateEntitlements']);
@@ -444,7 +468,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/tax-configurations',[SettingController::class, 'taxConfigurations']);
             Route::put('/tax-configurations',[SettingController::class, 'updateTaxConfigurations']);
             Route::post('/tax-configurations/{tax}/activate', [SettingController::class, 'activateTax']);
-            // ========== ROLES & PERMISSIONS ==========
+            
             Route::apiResource('roles', RoleController::class);
             Route::prefix('roles')->group(function () {
                 Route::get('/all',                 [RoleController::class, 'all']);
@@ -463,7 +487,6 @@ Route::prefix('v1')->group(function () {
                 Route::get('/{permission}/users', [PermissionController::class, 'users']);
             });
             
-            // Role Assignment
             Route::prefix('role-assignments')->group(function () {
                 Route::get('/users',                        [RoleAssignmentController::class, 'getUsersWithRoles']);
                 Route::get('/users/{user}',                  [RoleAssignmentController::class, 'getUserRoles']);
@@ -475,18 +498,19 @@ Route::prefix('v1')->group(function () {
                 Route::post('/bulk-assign',                  [RoleAssignmentController::class, 'bulkAssignRoles']);
                 Route::post('/bulk-remove',                  [RoleAssignmentController::class, 'bulkRemoveRoles']);
             });
+            
             Route::prefix('notifications')->group(function () {
                 Route::get('/',     [SettingController::class, 'notificationSettings']);
                 Route::put('/',     [SettingController::class, 'updateNotificationSettings']);
                 Route::post('/test',[SettingController::class, 'testNotification']);
             });
+            
             Route::prefix('system')->group(function () {
                 Route::get('/health',       [SettingController::class, 'systemHealth']);
                 Route::get('/cache',        [SettingController::class, 'cacheInfo']);
                 Route::post('/cache/clear', [SettingController::class, 'clearCache']);
             });
 
-            // Backup & Restore (admin only — already inside role:admin middleware)
             Route::prefix('backups')->group(function () {
                 Route::get('/',                        [BackupController::class, 'index']);
                 Route::post('/',                       [BackupController::class, 'create']);
