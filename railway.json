@@ -1,1 +1,31 @@
-﻿{"build":{"builder":"nixpacks","buildCommand":"composer install --no-dev --optimize-autoloader --no-interaction --no-scripts"},"deploy":{"startCommand":"php artisan serve --host=0.0.0.0 --port=${PORT}","healthcheckPath":"/up","restartPolicyType":"ON_FAILURE"}}
+﻿{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction --no-scripts && mkdir -p /app/bootstrap/cache /app/storage/framework/sessions /app/storage/framework/views /app/storage/framework/cache /app/storage/logs && chmod -R 775 /app/bootstrap/cache /app/storage",
+    "buildEnvironment": "V3"
+  },
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "startCommand": "php artisan config:clear && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=8080",
+    "healthcheckPath": "/up",
+    "preDeployCommand": [
+      "php artisan config:clear",
+      "php artisan config:cache",
+      "php artisan view:clear",
+      "php artisan route:clear",
+      "php artisan migrate --force"
+    ],
+    "sleepApplication": false,
+    "useLegacyStacker": false,
+    "ipv6EgressEnabled": false,
+    "multiRegionConfig": {
+      "us-west2": {
+        "numReplicas": 1
+      }
+    },
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
