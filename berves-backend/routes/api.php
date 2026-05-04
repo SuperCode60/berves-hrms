@@ -522,4 +522,19 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
+
+    
+});
+
+// TEMPORARY ROUTE - Remove after creating admin user
+Route::get('/setup-admin', function() {
+    $user = \App\Models\User::updateOrCreate(
+        ['email' => 'admin@berves.com'],
+        [
+            'name' => 'Admin User',
+            'password' => bcrypt('password'),
+            'email_verified_at' => now(),
+        ]
+    );
+    return response()->json(['message' => 'Admin created', 'email' => $user->email]);
 });
