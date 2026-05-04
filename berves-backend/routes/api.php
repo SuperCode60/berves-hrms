@@ -528,13 +528,32 @@ Route::prefix('v1')->group(function () {
 
 // TEMPORARY ROUTE - Remove after creating admin user
 Route::get('/setup-admin', function() {
+    // First create the employee
+    $employee = \App\Models\Employee::updateOrCreate(
+        ['email' => 'admin@berves.com'],
+        [
+            'employee_number' => 'ADMIN001',
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'phone' => '1234567890',
+            'gender' => 'other',
+            'employment_type' => 'permanent',
+            'employment_status' => 'active',
+            'hire_date' => now(),
+            'base_salary' => 0,
+        ]
+    );
+    
+    // Then create the user linked to the employee
     $user = \App\Models\User::updateOrCreate(
         ['email' => 'admin@berves.com'],
         [
-            'name' => 'Admin User',
+            'employee_id' => $employee->id,
             'password' => bcrypt('password'),
-            'email_verified_at' => now(),
+            'role' => 'admin',
+            'is_active' => true,
         ]
     );
-    return response()->json(['message' => 'Admin created', 'email' => $user->email]);
+    
+    return response()->json(['message' => 'Admin created', 'email' => $user->email, 'role' => $user->role]);
 });
