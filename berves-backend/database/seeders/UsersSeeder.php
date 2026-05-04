@@ -34,7 +34,7 @@ class UsersSeeder extends Seeder
 
         User::updateOrCreate(
             ['email' => 'admin@berves.com'],
-            ['employee_id' => $adminEmployee->id, 'password' => Hash::make('Admin@Secure2024!'), 'role' => 'admin', 'is_active' => true]
+            ['employee_id' => $adminEmployee->id, 'password' => Hash::make('password'), 'role' => 'admin', 'is_active' => true]
         );
 
         // HR User
@@ -110,10 +110,10 @@ class UsersSeeder extends Seeder
         $this->command->table(
             ['Role', 'Email', 'Password'],
             [
-                ['Admin', 'admin@berves.com', 'Admin@Secure2024!'],
-                ['HR', 'hr@berves.com', 'Hr@Secure2024!'],
-                ['Payroll Officer', 'payroll@berves.com', 'Payroll@Secure2024!'],
-                ['Employee', 'employee@berves.com', 'Employee@Secure2024!'],
+                ['Admin', 'admin@berves.com', 'password'],
+                ['HR', 'hr@berves.com', 'password'],
+                ['Payroll Officer', 'payroll@berves.com', 'password'],
+                ['Employee', 'employee@berves.com', 'password'],
             ]
         );
     }
