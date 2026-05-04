@@ -528,7 +528,39 @@ Route::prefix('v1')->group(function () {
 
 // TEMPORARY ROUTE - Remove after creating admin user
 Route::get('/setup-admin', function() {
-    // First create the employee
+    // Create default department if none exists
+    $department = \App\Models\Department::first();
+    if (!$department) {
+        $department = \App\Models\Department::create([
+            'name' => 'Administration',
+            'code' => 'ADMIN',
+            'description' => 'System Administration'
+        ]);
+    }
+    
+    // Create default job title if none exists
+    $jobTitle = \App\Models\JobTitle::first();
+    if (!$jobTitle) {
+        $jobTitle = \App\Models\JobTitle::create([
+            'title' => 'System Administrator',
+            'code' => 'SYSADMIN',
+            'department_id' => $department->id,
+            'description' => 'System Administrator'
+        ]);
+    }
+    
+    // Create default site if none exists
+    $site = \App\Models\Site::first();
+    if (!$site) {
+        $site = \App\Models\Site::create([
+            'name' => 'Head Office',
+            'code' => 'HQ',
+            'location' => 'Main Office',
+            'address' => 'Head Office Location'
+        ]);
+    }
+    
+    // Create the employee
     $employee = \App\Models\Employee::updateOrCreate(
         ['email' => 'admin@berves.com'],
         [
@@ -537,14 +569,17 @@ Route::get('/setup-admin', function() {
             'last_name' => 'User',
             'phone' => '1234567890',
             'gender' => 'other',
+            'department_id' => $department->id,
+            'job_title_id' => $jobTitle->id,
+            'site_id' => $site->id,
             'employment_type' => 'permanent',
             'employment_status' => 'active',
-            'hire_date' => now(),
+            'hire_date' => now()->toDateString(),
             'base_salary' => 0,
         ]
     );
     
-    // Then create the user linked to the employee
+    // Create the user linked to the employee
     $user = \App\Models\User::updateOrCreate(
         ['email' => 'admin@berves.com'],
         [
@@ -555,5 +590,17 @@ Route::get('/setup-admin', function() {
         ]
     );
     
-    return response()->json(['message' => 'Admin created', 'email' => $user->email, 'role' => $user->role]);
+    return response()->json([
+        'success' => true,
+        'message' => 'Admin user and employee created',
+        'user' => [
+            'email' => $user->email,
+            'role' => $user->role,
+        ],
+        'employee' => [
+            'id' => $employee->id,
+            'name' => $employee->first_name . ' ' . $employee->last_name,
+            'employee_number' => $employee->employee_number,
+        ]
+    ]);
 });
